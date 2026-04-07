@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<!-- iPad最適化: スケール固定・Safe Area対応 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- iPadホーム画面追加対応 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="自転車点検アプリ">
+<!-- テーマカラー -->
+<meta name="theme-color" content="#0d1b2a">
+<meta name="description" content="電動キックボード・電動自転車・ハマー・e-bike 日常点検管理アプリ">
+<title>自転車点検アプリ | Vehicle Inspection</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- ナビゲーション -->
+<nav class="navbar">
+  <div class="nav-brand">
+    <svg class="nav-logo" viewBox="0 0 60 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="28" r="9" stroke="#FF6B00" stroke-width="3"/>
+      <circle cx="48" cy="28" r="9" stroke="#FF6B00" stroke-width="3"/>
+      <circle cx="12" cy="28" r="3" fill="#FF6B00"/>
+      <circle cx="48" cy="28" r="3" fill="#FF6B00"/>
+      <path d="M12 28 L22 10 L38 10 L48 28" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+      <path d="M22 10 L30 28" stroke="#ffffff" stroke-width="2.5"/>
+      <path d="M18 10 L26 10" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+      <path d="M44 24 L52 24" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+    </svg>
+    <span class="nav-title">自転車点検アプリ</span>
+  </div>
+  <div class="nav-actions">
+    <button class="nav-btn" onclick="showPage('dashboard')" id="nav-dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      ホーム
+    </button>
+    <button class="nav-btn" onclick="showPage('history')" id="nav-history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      点検履歴
+    </button>
+    <button class="nav-btn" onclick="showPage('approval')" id="nav-approval">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg>
+      承認管理
+      <span class="badge" id="approval-badge" style="display:none">0</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('settings')" id="nav-settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      設定
+    </button>
+  </div>
+</nav>
+
+<!-- メインコンテンツ -->
+<main class="main-content">
+
+  <!-- ダッシュボード -->
+  <div class="page" id="page-dashboard">
+    <div class="page-header">
+      <div class="gear-decoration">
+        <svg class="gear-svg" viewBox="0 0 100 100"><path d="M50 20 L54 5 L46 5 Z M50 80 L54 95 L46 95 Z M20 50 L5 54 L5 46 Z M80 50 L95 54 L95 46 Z M28.8 28.8 L18.4 18.4 L13 23.8 Z M71.2 71.2 L81.6 81.6 L87 76.2 Z M28.8 71.2 L18.4 81.6 L23.8 87 Z M71.2 28.8 L81.6 18.4 L76.2 13 Z" fill="#FF6B00" opacity="0.15"/><circle cx="50" cy="50" r="30" stroke="#FF6B00" stroke-width="1" fill="none" opacity="0.2"/><circle cx="50" cy="50" r="20" stroke="#FF6B00" stroke-width="2" fill="none" opacity="0.3"/><circle cx="50" cy="50" r="8" fill="#FF6B00" opacity="0.4"/></svg>
+      </div>
+      <div class="header-text">
+        <h1>自転車点検アプリ</h1>
+        <p id="current-date"></p>
+      </div>
+      <button class="btn-primary btn-new-inspection" onclick="showPage('new-inspection')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        新規点検
+      </button>
+    </div>
+
+    <!-- 統計カード -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-total">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-total">0</span>
+          <span class="stat-label">総点検件数</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-pending">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-pending">0</span>
+          <span class="stat-label">承認待ち</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-approved">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-approved">0</span>
+          <span class="stat-label">承認済み</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-icon-rejected">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <div class="stat-info">
+          <span class="stat-value" id="stat-rejected">0</span>
+          <span class="stat-label">差し戻し</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 車両別統計 -->
+    <div class="section-title">車両別点検状況</div>
+    <div class="vehicle-stats-grid">
+      <div class="vehicle-stat-card" data-vehicle="電動キックボード">
+        <div class="vehicle-icon kickboard">
+          <svg viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="15" cy="38" r="8" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="65" cy="38" r="8" stroke="#FF6B00" stroke-width="2.5"/>
+            <rect x="14" y="12" width="3" height="26" fill="#fff" rx="1"/>
+            <rect x="8" y="10" width="15" height="4" fill="#FF6B00" rx="2"/>
+            <path d="M17 38 L55 20 L65 38" stroke="#fff" stroke-width="2.5" fill="none"/>
+            <rect x="50" y="16" width="20" height="6" fill="#FF6B00" rx="2" opacity="0.8"/>
+          </svg>
+        </div>
+        <div class="vehicle-stat-info">
+          <h3>電動キックボード</h3>
+          <span class="vehicle-count" id="vc-kickboard">0件</span>
+        </div>
+      </div>
+      <div class="vehicle-stat-card" data-vehicle="電動自転車">
+        <div class="vehicle-icon ebike">
+          <svg viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="15" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="65" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="15" cy="35" r="4" fill="#FF6B00"/>
+            <circle cx="65" cy="35" r="4" fill="#FF6B00"/>
+            <path d="M15 35 L28 15 L45 15 L65 35" stroke="#fff" stroke-width="2.5" fill="none"/>
+            <path d="M28 15 L38 35" stroke="#fff" stroke-width="2"/>
+            <path d="M24 15 L32 15" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+            <path d="M62 30 L68 30" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+            <rect x="35" y="22" width="12" height="6" fill="#FF6B00" rx="2" opacity="0.9"/>
+          </svg>
+        </div>
+        <div class="vehicle-stat-info">
+          <h3>電動自転車</h3>
+          <span class="vehicle-count" id="vc-ebicycle">0件</span>
+        </div>
+      </div>
+      <div class="vehicle-stat-card" data-vehicle="ハマー">
+        <div class="vehicle-icon hummer">
+          <svg viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="15" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="65" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="15" cy="35" r="4" fill="#FF6B00"/>
+            <circle cx="65" cy="35" r="4" fill="#FF6B00"/>
+            <path d="M15 35 L25 12 L55 12 L65 35" stroke="#fff" stroke-width="2.5" fill="none"/>
+            <path d="M25 12 L35 35" stroke="#fff" stroke-width="2"/>
+            <path d="M20 12 L60 12" stroke="#FF6B00" stroke-width="3"/>
+            <path d="M22 8 L28 8" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+            <path d="M62 31 L68 31" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="vehicle-stat-info">
+          <h3>ハマー</h3>
+          <span class="vehicle-count" id="vc-hummer">0件</span>
+        </div>
+      </div>
+      <div class="vehicle-stat-card" data-vehicle="e-bike">
+        <div class="vehicle-icon ebikespec">
+          <svg viewBox="0 0 80 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="15" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="65" cy="35" r="11" stroke="#FF6B00" stroke-width="2.5"/>
+            <circle cx="15" cy="35" r="4" fill="#FF6B00"/>
+            <circle cx="65" cy="35" r="4" fill="#FF6B00"/>
+            <path d="M15 35 L27 14 L48 14 L65 35" stroke="#fff" stroke-width="2.5" fill="none"/>
+            <path d="M27 14 L36 35" stroke="#fff" stroke-width="2"/>
+            <path d="M23 10 L32 10" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
+            <path d="M62 31 L68 31" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+            <path d="M38 20 L50 20 L46 28 L54 28" stroke="#FF6B00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="vehicle-stat-info">
+          <h3>e-bike</h3>
+          <span class="vehicle-count" id="vc-ebike">0件</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 最近の点検 -->
+    <div class="section-title">最近の点検</div>
+    <div class="recent-list" id="recent-inspections">
+      <div class="empty-state">
+        <svg viewBox="0 0 64 64" fill="none"><circle cx="32" cy="32" r="28" stroke="#FF6B00" stroke-width="2" opacity="0.3"/><path d="M20 32 L28 40 L44 24" stroke="#FF6B00" stroke-width="3" stroke-linecap="round" opacity="0.3"/></svg>
+        <p>点検データがありません<br>「新規点検」から始めてください</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 新規点検フォーム -->
+  <div class="page" id="page-new-inspection" style="display:none">
+    <div class="page-header">
+      <button class="btn-back" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        戻る
+      </button>
+      <h1>新規点検</h1>
+    </div>
+
+    <!-- ステップインジケーター -->
+    <div class="step-indicator">
+      <div class="step active" id="step-1-ind"><span>1</span><label>車両選択</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="step-2-ind"><span>2</span><label>基本情報</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="step-3-ind"><span>3</span><label>点検実施</label></div>
+      <div class="step-line"></div>
+      <div class="step" id="step-4-ind"><span>4</span><label>完了・送信</label></div>
+    </div>
+
+    <!-- Step 1: 車両選択 -->
+    <div class="form-step" id="form-step-1">
+      <h2 class="step-title">点検する車両を選択してください</h2>
+      <div class="vehicle-select-grid">
+        <div class="vehicle-card" onclick="selectVehicle('電動キックボード', this)">
+          <div class="vehicle-card-icon">
+            <svg viewBox="0 0 100 70" fill="none">
+              <circle cx="20" cy="52" r="13" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="80" cy="52" r="13" stroke="#FF6B00" stroke-width="3"/>
+              <rect x="18" y="16" width="4" height="36" fill="#fff" rx="2"/>
+              <rect x="10" y="13" width="20" height="6" fill="#FF6B00" rx="3"/>
+              <path d="M22 52 L65 28 L80 52" stroke="#fff" stroke-width="3" fill="none"/>
+              <rect x="62" y="22" width="25" height="8" fill="#FF6B00" rx="3" opacity="0.8"/>
+              <path d="M72 18 L60 18" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>電動キックボード</h3>
+          <p>Electric Kickboard</p>
+          <div class="selected-badge">✓ 選択中</div>
+        </div>
+        <div class="vehicle-card" onclick="selectVehicle('電動自転車', this)">
+          <div class="vehicle-card-icon">
+            <svg viewBox="0 0 100 70" fill="none">
+              <circle cx="20" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="80" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="20" cy="50" r="5" fill="#FF6B00"/>
+              <circle cx="80" cy="50" r="5" fill="#FF6B00"/>
+              <path d="M20 50 L37 18 L60 18 L80 50" stroke="#fff" stroke-width="3" fill="none"/>
+              <path d="M37 18 L50 50" stroke="#fff" stroke-width="2.5"/>
+              <path d="M32 15 L42 15" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
+              <path d="M77 44 L87 44" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
+              <rect x="48" y="28" width="16" height="8" fill="#FF6B00" rx="3"/>
+            </svg>
+          </div>
+          <h3>電動自転車</h3>
+          <p>Electric Bicycle</p>
+          <div class="selected-badge">✓ 選択中</div>
+        </div>
+        <div class="vehicle-card" onclick="selectVehicle('ハマー', this)">
+          <div class="vehicle-card-icon">
+            <svg viewBox="0 0 100 70" fill="none">
+              <circle cx="20" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="80" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="20" cy="50" r="5" fill="#FF6B00"/>
+              <circle cx="80" cy="50" r="5" fill="#FF6B00"/>
+              <path d="M20 50 L30 16 L70 16 L80 50" stroke="#fff" stroke-width="3" fill="none"/>
+              <path d="M30 16 L43 50" stroke="#fff" stroke-width="2.5"/>
+              <path d="M25 16 L75 16" stroke="#FF6B00" stroke-width="4"/>
+              <path d="M27 10 L36 10" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+              <path d="M77 44 L87 44" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <h3>ハマー</h3>
+          <p>HUMMER Bike</p>
+          <div class="selected-badge">✓ 選択中</div>
+        </div>
+        <div class="vehicle-card" onclick="selectVehicle('e-bike', this)">
+          <div class="vehicle-card-icon">
+            <svg viewBox="0 0 100 70" fill="none">
+              <circle cx="20" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="80" cy="50" r="16" stroke="#FF6B00" stroke-width="3"/>
+              <circle cx="20" cy="50" r="5" fill="#FF6B00"/>
+              <circle cx="80" cy="50" r="5" fill="#FF6B00"/>
+              <path d="M20 50 L33 18 L62 18 L80 50" stroke="#fff" stroke-width="3" fill="none"/>
+              <path d="M33 18 L46 50" stroke="#fff" stroke-width="2.5"/>
+              <path d="M28 13 L40 13" stroke="#FF6B00" stroke-width="5" stroke-linecap="round"/>
+              <path d="M77 44 L87 44" stroke="#FF6B00" stroke-width="4" stroke-linecap="round"/>
+              <path d="M50 26 L64 26 L60 36 L70 36" stroke="#FF6B00" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h3>e-bike</h3>
+          <p>E-Bike</p>
+          <div class="selected-badge">✓ 選択中</div>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button class="btn-primary" onclick="goToStep(2)" id="btn-step1-next" disabled>次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 2: 基本情報 -->
+    <div class="form-step" id="form-step-2" style="display:none">
+      <h2 class="step-title">基本情報を入力してください</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>点検日時</label>
+          <input type="datetime-local" id="inspection-date" class="form-input">
+        </div>
+        <div class="form-group">
+          <label>点検者名 <span class="required">*</span></label>
+          <input type="text" id="inspector-name" class="form-input" placeholder="例：山田 太郎">
+        </div>
+        <div class="form-group">
+          <label>所属 / 部署</label>
+          <input type="text" id="inspector-dept" class="form-input" value="新大村新幹線工務所信通" placeholder="例：施設管理課">
+        </div>
+        <div class="form-group">
+          <label>車両番号</label>
+          <input type="text" id="vehicle-number" class="form-input" placeholder="例：001（後日設定可）" list="vehicle-numbers-list">
+          <datalist id="vehicle-numbers-list"></datalist>
+        </div>
+        <div class="form-group full-width">
+          <label>点検場所</label>
+          <input type="text" id="inspection-location" class="form-input" value="倉庫" placeholder="例：第1駐輪場">
+        </div>
+        <div class="form-group full-width">
+          <label>天候</label>
+          <div class="weather-select">
+            <button class="weather-btn" onclick="selectWeather('晴れ', this)">☀️ 晴れ</button>
+            <button class="weather-btn" onclick="selectWeather('曇り', this)">☁️ 曇り</button>
+            <button class="weather-btn" onclick="selectWeather('雨', this)">🌧️ 雨</button>
+            <button class="weather-btn" onclick="selectWeather('雪', this)">❄️ 雪</button>
+          </div>
+        </div>
+      </div>
+      <div class="step-actions">
+        <button class="btn-secondary" onclick="goToStep(1)">← 戻る</button>
+        <button class="btn-primary" onclick="goToStep(3)">次へ →</button>
+      </div>
+    </div>
+
+    <!-- Step 3: 点検チェックリスト -->
+    <div class="form-step" id="form-step-3" style="display:none">
+      <h2 class="step-title">点検チェックリスト</h2>
+      <div class="checklist-container" id="checklist-container">
+        <!-- JSで動的生成 -->
+      </div>
+      <div class="form-group full-width" style="margin-top:20px">
+        <label>総合所見・特記事項</label>
+        <textarea id="overall-comment" class="form-textarea" rows="4" placeholder="点検全体を通じて気になった点、特記事項があれば記入してください"></textarea>
+      </div>
+      <div class="step-actions">
+        <button class="btn-secondary" onclick="goToStep(2)">← 戻る</button>
+        <button class="btn-primary" onclick="goToStep(4)">点検完了 →</button>
+      </div>
+    </div>
+
+    <!-- Step 4: 完了・承認依頼 -->
+    <div class="form-step" id="form-step-4" style="display:none">
+      <h2 class="step-title">点検完了・クラウド連携</h2>
+      <div class="cloud-sync-status" id="cloud-sync-status" style="display:none;margin-bottom:12px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.05);font-size:13px;border:1px solid rgba(255,255,255,0.1)">
+        <span class="sync-icon">🔄</span> SharePoint連携: <span id="sync-msg">準備中...</span>
+      </div>
+      <div class="completion-summary" id="completion-summary">
+        <!-- JSで動的生成 -->
+      </div>
+      <div class="approval-section">
+        <h3>承認依頼</h3>
+        <div class="approval-info">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg>
+          <div>
+            <p class="approver-name">助役</p>
+            <p class="approver-email" id="display-approver-email">設定から承認者メールを設定してください</p>
+          </div>
+        </div>
+        <div class="form-group full-width">
+          <label>承認依頼コメント</label>
+          <textarea id="approval-comment" class="form-textarea" rows="3" placeholder="助役への連絡事項があれば記入してください"></textarea>
+        </div>
+        <div class="step-actions">
+          <button class="btn-secondary" onclick="goToStep(3)">← 戻る</button>
+          <button class="btn-save" onclick="saveAsDraft()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            下書き保存
+          </button>
+          <button class="btn-primary" onclick="submitInspection()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            承認依頼を送信
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 点検履歴 -->
+  <div class="page" id="page-history" style="display:none">
+    <div class="page-header">
+      <h1>点検履歴</h1>
+      <div class="header-actions">
+        <select class="filter-select" id="filter-vehicle" onchange="filterHistory()">
+          <option value="">全車両</option>
+          <option value="電動キックボード">電動キックボード</option>
+          <option value="電動自転車">電動自転車</option>
+          <option value="ハマー">ハマー</option>
+          <option value="e-bike">e-bike</option>
+        </select>
+        <select class="filter-select" id="filter-status" onchange="filterHistory()">
+          <option value="">全ステータス</option>
+          <option value="draft">下書き</option>
+          <option value="pending">承認待ち</option>
+          <option value="approved">承認済み</option>
+          <option value="rejected">差し戻し</option>
+        </select>
+      </div>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+
+  <!-- 承認管理 -->
+  <div class="page" id="page-approval" style="display:none">
+    <div class="page-header">
+      <h1>承認管理 <span class="role-badge">助役</span></h1>
+    </div>
+    <div class="approval-pin-gate" id="approval-pin-gate">
+      <div class="pin-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="48" height="48"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <h3>助役ログイン</h3>
+        <p>PINコードを入力してください</p>
+        <input type="password" id="approval-pin" class="pin-input" maxlength="4" placeholder="• • • •" inputmode="numeric">
+        <button class="btn-primary" onclick="checkApprovalPin()">ログイン</button>
+        <p class="pin-hint">初期PIN: 1234（設定から変更できます）</p>
+      </div>
+    </div>
+    <div class="approval-content" id="approval-content" style="display:none">
+      <button class="btn-secondary" onclick="logoutApproval()" style="margin-bottom:16px">ログアウト</button>
+      <div class="approval-list" id="approval-list"></div>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="page" id="page-settings" style="display:none">
+    <div class="page-header">
+      <h1>設定</h1>
+    </div>
+    <div class="settings-grid">
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><circle cx="12" cy="8" r="4"/><path d="M12 14c-5 0-8 2.5-8 4v1h16v-1c0-1.5-3-4-8-4z"/></svg>
+          承認者設定
+        </h3>
+        <div class="form-group">
+          <label>助役 メールアドレス</label>
+          <input type="email" id="approver-email" class="form-input" placeholder="joseki@example.com">
+        </div>
+        <div class="form-group">
+          <label>助役 名前</label>
+          <input type="text" id="approver-name" class="form-input" placeholder="例：鈴木 一郎">
+        </div>
+        <div class="form-group">
+          <label>承認PIN（4桁）</label>
+          <input type="password" id="approval-pin-setting" class="form-input" maxlength="4" placeholder="1234" inputmode="numeric">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <button class="btn-primary" onclick="saveSettings()" style="flex:1">設定を保存</button>
+          <button class="btn-secondary" onclick="testEmailConfig()" style="flex:1">📩 テスト送信</button>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          セキュリティ設定
+        </h3>
+        <div class="form-group">
+          <label>自動ロック時間</label>
+          <select id="setting-auto-lock" class="form-input">
+            <option value="1">1分間無操作でロック</option>
+            <option value="5">5分間無操作でロック</option>
+            <option value="10">10分間無操作でロック</option>
+            <option value="30">30分間無操作でロック</option>
+            <option value="0">自動ロックしない</option>
+          </select>
+          <p style="color:#888; font-size:11px; margin-top:4px;">※セキュリティのため、こまめなロックを推奨します</p>
+        </div>
+        <button class="btn-primary" onclick="saveSettings()">設定を保存</button>
+      </div>
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          車両番号管理
+        </h3>
+        <p style="color:#888;font-size:14px;margin-bottom:12px">各車種の車両番号を管理します</p>
+        <div id="vehicle-numbers-manager"></div>
+        <button class="btn-primary" style="margin-top:12px" onclick="saveVehicleNumbers()">車両番号を保存</button>
+      </div>
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          車両別推奨空気圧設定
+        </h3>
+        <p style="color:#888;font-size:14px;margin-bottom:12px">タイヤ点検時に表示される推奨空気圧を自由に記載できます</p>
+        <div id="tire-pressure-manager" style="display:flex; flex-direction:column; gap:12px">
+          <!-- JSで描画 -->
+        </div>
+        <button class="btn-primary" onclick="saveTirePressures()" style="margin-top:16px">空気圧設定を保存</button>
+      </div>
+
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          カスタム点検項目の追加・管理
+        </h3>
+        <p style="color:#888;font-size:14px;margin-bottom:12px">リストにない独自の点検項目を追加できます</p>
+        <div class="form-group">
+          <label>点検項目名</label>
+          <input type="text" id="custom-item-name" class="form-input" placeholder="例：ヘルメットの傷">
+        </div>
+        <div class="form-group">
+          <label>チェック内容（説明）</label>
+          <input type="text" id="custom-item-note" class="form-input" placeholder="例：大きなひび割れや損傷がないか">
+        </div>
+        <div class="form-group">
+          <label>追加先セクション</label>
+          <select id="custom-item-section" class="form-input">
+            <option value="走行機能">走行機能</option>
+            <option value="安全装備">安全装備</option>
+            <option value="車体・駆動">車体・駆動</option>
+          </select>
+        </div>
+        <button class="btn-primary" style="width:100%; margin-bottom:16px" onclick="addCustomItem()">＋ 項目を追加</button>
+        
+        <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 12px;">
+          <label style="font-size:12px; color:#aaa; margin-bottom:8px; display:block">追加済みの項目</label>
+          <div id="custom-items-list" style="display:flex; flex-direction:column; gap:8px">
+            <!-- JSで描画 -->
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Power Platform 連携 (SharePoint)
+        </h3>
+        <p style="color:#888;font-size:14px;margin-bottom:12px">Power Automate の Webhook URL を設定します</p>
+        <div class="form-group">
+          <label>HTTP POST URL</label>
+          <input type="url" id="power-automate-url" class="form-input" placeholder="https://prod-...">
+          <p style="font-size:11px;color:rgba(255,107,0,0.6);margin-top:4px">※Flowで発行されたURLを貼り付けてください</p>
+        </div>
+        <button class="btn-primary" onclick="savePASettings()">連携設定を保存</button>
+      </div>
+
+      <div class="settings-card" style="grid-column: 1 / -1;">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          車両別点検箇所確認管理
+        </h3>
+        <p style="color:#888;font-size:14px;margin-bottom:16px">点検時に表示される「点検箇所確認」の写真を車両・項目ごとに設定できます。また、各車両で表示する項目の選択も可能です。</p>
+        
+        <div class="form-group" style="max-width:300px; margin-bottom:20px">
+          <label>対象車両を選択</label>
+          <select id="ref-vehicle-select" class="form-input" onchange="renderRefPhotoSettings()">
+            <option value="電動キックボード">電動キックボード</option>
+            <option value="電動自転車">電動自転車</option>
+            <option value="ハマー">ハマー</option>
+            <option value="e-bike">e-bike</option>
+          </select>
+        </div>
+
+        <div id="ref-photo-manager-list" class="ref-manager-list">
+          <!-- JSで描画 -->
+        </div>
+
+        <!-- 隠しinput -->
+        <input type="file" id="ref-photo-input" style="display:none" accept="image/*">
+      </div>
+
+      <div class="settings-card">
+        <h3>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#FF6B00" stroke-width="2" width="20" height="20"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          データ管理
+        </h3>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button class="btn-secondary" onclick="exportAllData()">📦 全データをエクスポート</button>
+          <button class="btn-secondary" onclick="importData()">📂 データをインポート</button>
+          <button class="btn-danger" onclick="clearAllData()">🗑️ 全データを削除</button>
+        </div>
+        <input type="file" id="import-file" style="display:none" accept=".json" onchange="handleImport(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- 点検詳細モーダル -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal()">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast通知 -->
+<div class="toast" id="toast"></div>
+
+  <!-- 写真アップロード用隠しinput -->
+  <input type="file" id="photo-input" style="display:none" accept="image/*" capture="environment">
+
+  <!-- アプリ・ロック画面 (全画面オーバーレイ) -->
+  <div class="app-lock-overlay active" id="app-lock-screen">
+    <div class="lock-card">
+      <div class="lock-brand">
+        <svg viewBox="0 0 60 40" fill="none" style="width:120px; height:80px; margin:0 auto 20px;">
+          <circle cx="12" cy="28" r="9" stroke="#FF6B00" stroke-width="3"/>
+          <circle cx="48" cy="28" r="9" stroke="#FF6B00" stroke-width="3"/>
+          <circle cx="12" cy="28" r="3" fill="#FF6B00"/>
+          <circle cx="48" cy="28" r="3" fill="#FF6B00"/>
+          <path d="M12 28 L22 10 L38 10 L48 28" stroke="#ffffff" stroke-width="2.5" fill="none"/>
+          <path d="M22 10 L30 28" stroke="#ffffff" stroke-width="2.5"/>
+          <path d="M18 10 L26 10" stroke="#FF6B00" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+        <h1 style="color:#fff; font-weight:900;">自転車点検アプリ</h1>
+        <p style="color:var(--gray-400); margin-top:8px;">セキュリティ保護されています</p>
+      </div>
+
+      <div class="pin-display">
+        <div class="pin-dot" id="dot-1"></div>
+        <div class="pin-dot" id="dot-2"></div>
+        <div class="pin-dot" id="dot-3"></div>
+        <div class="pin-dot" id="dot-4"></div>
+      </div>
+
+      <div class="pin-keypad">
+        <button onclick="pressKey('1')">1</button>
+        <button onclick="pressKey('2')">2</button>
+        <button onclick="pressKey('3')">3</button>
+        <button onclick="pressKey('4')">4</button>
+        <button onclick="pressKey('5')">5</button>
+        <button onclick="pressKey('6')">6</button>
+        <button onclick="pressKey('7')">7</button>
+        <button onclick="pressKey('8')">8</button>
+        <button onclick="pressKey('9')">9</button>
+        <button class="empty"></button>
+        <button onclick="pressKey('0')">0</button>
+        <button onclick="pressKey('back')" class="key-back">⌫</button>
+      </div>
+      <p id="lock-error-msg" style="color:var(--red); font-size:12px; margin-top:16px; visibility:hidden;">PINが正しくありません</p>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
